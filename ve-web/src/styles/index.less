@@ -1,0 +1,62 @@
+@import '../../node_modules/antd/dist/antd.less';
+@import './customAntd.less';
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  margin-bottom: 0;
+}
+
+.ant-layout {
+  height: 100vh;
+}
+
+video {
+  &:focus {
+    outline: none;
+  }
+}
+
+.login-modal,
+.register-modal {
+  .ant-modal-header {
+    border-bottom: 0;
+  }
+}
+
+.welcome-modal {
+  .ant-modal-footer {
+    text-align: center;
+  }
+}
+
+.inbox-modal {
+  .ant-modal-header {
+    padding: 0;
+  }
+}
+
+.inbox-cms {
+  .ant-card-head-title {
+    padding: 0;
+  }
+}
+
+.sb-avatar {
+  img {
+    border: 1px solid #ddd;
+  }
+}
+
+.ant-avatar {
+  border: 1px solid #ddd;
+}
+
+*,
+*:focus,
+*:hover {
+  outline: none !important;
+}

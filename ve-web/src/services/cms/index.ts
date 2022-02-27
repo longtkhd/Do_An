@@ -1,0 +1,14 @@
+export { default as extraDataService } from './extraData';
+export { default as roleService } from './role';
+export { default as permissionService } from './permission';
+export { default as userService } from './user';
+export { default as lobbyService } from './lobby';
+export { default as hallService } from './hall';
+export { default as sceneTemplateService } from './sceneTemplate';
+export { default as assetService } from './asset';
+export { default as stageService } from './stage';
+export { default as landingService } from './landing';
+export { default as boothService } from './booth';
+export { default as visitService } from './visit';
+export { default as resourceHubService } from './resourceHub';
+export { default as collectorService } from './collector';

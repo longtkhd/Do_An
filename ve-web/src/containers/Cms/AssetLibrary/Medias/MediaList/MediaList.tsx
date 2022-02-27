@@ -1,0 +1,189 @@
+import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
+import { observer } from 'mobx-react';
+import { Card, Table, Tag, Space, Button, Modal, message, Image } from 'antd';
+import { useTranslation } from 'react-i18next';
+import { useCmsStores, useCommonStores } from '@/hooks';
+import {
+  EditOutlined,
+  DeleteOutlined,
+  ClockCircleOutlined,
+} from '@ant-design/icons';
+import { IPagination, IAsset } from '@/interfaces';
+import { configConstants } from '@/constants';
+import IconBtn from '@/components/styles/IconBtn';
+import StyledHeading from '@/components/styles/StyledHeading';
+import moment from 'moment';
+
+const MediaList: React.FC = observer(() => {
+  const { t } = useTranslation();
+  const { authStore } = useCommonStores();
+  const { assetStore } = useCmsStores();
+  const initialParams = {
+    sort: 'id',
+    order: 'descend',
+    boothId:
+      authStore.userInfo?.boothId ?? authStore.userInfo?.organizer.boothId,
+    type: 'MEDIA',
+  };
+  const [params, setParams] = useState<any>(initialParams);
+
+  const handleDelete = (id?: number) => {
+    Modal.confirm({
+      title: t('shared.DELETE_CONFIRMATION'),
+      content: t('asset.DO_YOU_WANT_TO_DELETE_THIS_ASSET'),
+      okText: t('shared.DELETE'),
+      okType: 'primary',
+      okButtonProps: { danger: true },
+      cancelText: t('shared.CANCEL'),
+      onOk: async () => {
+        const res = await assetStore.deleteAsset(id!);
+        if (res && !assetStore.error) {
+          setParams(initialParams);
+          message.success(t('asset.DELETE_ASSET_SUCCESSFULLY'));
+        }
+      },
+    });
+  };
+
+  const columns = [
+    {
+      title: t('asset.ID'),
+      dataIndex: 'id',
+      sorter: true,
+      defaultSortOrder: 'descend' as 'descend',
+    },
+    {
+      title: t('asset.PREVIEW'),
+      dataIndex: 'image',
+      width: 160,
+      render: (text: any, item: IAsset) => {
+        const isImage = configConstants.imageExt.includes(
+          item.value
+            .split('.')
+            .pop()
+            ?.toLowerCase()!
+        );
+        return (
+          <Image
+            style={{ objectFit: 'cover' }}
+            height={70}
+            src={
+              isImage
+                ? `${configConstants.ASSETS_URL}/assets/${item.id}/${item.value}`
+                : require('@/assets/images/mp4-thumb.png')
+            }
+            placeholder={true}
+            fallback={require('@/assets/images/noimage-thumb.png')}
+          />
+        );
+      },
+    },
+    {
+      title: t('asset.NAME'),
+      dataIndex: 'name',
+      sorter: true,
+    },
+    {
+      title: t('asset.STATUS'),
+      dataIndex: 'status',
+      sorter: true,
+      render: (text: string) =>
+        text === 'ACTIVE' ? (
+          <Tag color="green">{t('shared.ACTIVE')}</Tag>
+        ) : (
+          <Tag color="red">{t('shared.INACTIVE')}</Tag>
+        ),
+    },
+    {
+      title: t('asset.CREATED_AT'),
+      dataIndex: 'createdAt',
+      sorter: true,
+      render: (text: any) => (
+        <>
+          <ClockCircleOutlined /> {moment(text).format('DD/MM/YYYY HH:mm')}
+        </>
+      ),
+    },
+    {
+      title: t('asset.UPDATED_AT'),
+      dataIndex: 'updatedAt',
+      sorter: true,
+      render: (text: any) => (
+        <>
+          <ClockCircleOutlined /> {moment(text).format('DD/MM/YYYY HH:mm')}
+        </>
+      ),
+    },
+    {
+      title: 'Action',
+      key: 'action',
+      fixed: 'right' as 'right',
+      width: 120,
+      render: (text: any, item: IAsset) => {
+        return (
+          <Space size={5}>
+            <Link to={`/cms/asset-library/media/edit/${item.id}`}>
+              <IconBtn>
+                <EditOutlined />
+              </IconBtn>
+            </Link>
+            <IconBtn onClick={() => handleDelete(item.id)}>
+              <DeleteOutlined />
+            </IconBtn>
+          </Space>
+        );
+      },
+    },
+  ];
+
+  useEffect(() => {
+    assetStore.getAssets(params);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [params]);
+
+  const handleTableChange = (
+    pagination: IPagination,
+    filters: any,
+    sorter: any
+  ) => {
+    setParams({
+      ...params,
+      sort: sorter.field,
+      order: sorter.order,
+      page: pagination.current,
+      pageSize: pagination.pageSize,
+    });
+  };
+
+  return (
+    <Card
+      title={
+        <StyledHeading tag={t('asset.MEDIA')}>
+          {t('asset.MEDIA_ASSET_LISTING')}
+        </StyledHeading>
+      }
+      bordered={false}
+      extra={
+        <Button type="primary">
+          <Link to="/cms/asset-library/media/create">
+            {t('asset.CREATE_ASSET')}
+          </Link>
+        </Button>
+      }
+    >
+      <Table
+        bordered
+        rowKey="id"
+        loading={assetStore.isLoading}
+        columns={columns}
+        dataSource={assetStore.assets}
+        pagination={assetStore.pagination}
+        scroll={{ x: 1000 }}
+        onChange={handleTableChange}
+      />
+    </Card>
+  );
+});
+
+export default MediaList;
